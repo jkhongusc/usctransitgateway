@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A stack for creating a DynamoDB table to store transit gateway configurations
+Parameters:
+  TagAdmin:
+    Type: String
+    Default: jkhong
+    Description: 'Tag: project admin (uid)'
+  TagEnvironment:
+    Type: String
+    Default: Production
+    Description: 'Tag: project environment enter - Development, Test, Staging, Production'
+  TagOwner:
+    Type: String
+    Default: dcorley
+    Description: 'Tag: project owner (uid)'
+  TagProject:
+    Type: String
+    Default: transit-gateway-us-west-2
+    Description: 'Tag: project'
+Resources:
+  DynamoDBTGWTable:
+    Type: AWS::DynamoDB::Table
+    Description: Transit Gateway table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-table
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: Account
+          AttributeType: S
+        - AttributeName: Cidr
+          AttributeType: S
+        - AttributeName: VpcId
+          AttributeType: S
+        - AttributeName: TransitGateway
+          AttributeType: S
+        - AttributeName: Department
+          AttributeType: S
+        - AttributeName: OwnerEmail
+          AttributeType: S
+        - AttributeName: TechEmail
+          AttributeType: S
+        - AttributeName: Comments
+          AttributeType: S
+        - AttributeName: Description
+          AttributeType: S
+        - AttributeName: Data
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Account
+          KeyType: HASH
+        - AttributeName: CIDR
+          KeyType: RANGE
+ 
+# These are the values output by the CloudFormation template. Be careful
+# about changing any of them, because of them are exported with specific
+# names so that the other task related CF templates can use them.
+Outputs:
+  StackName:
+    Description: 'Stack name.'
+    Value: !Sub '${AWS::StackName}'
+ 
