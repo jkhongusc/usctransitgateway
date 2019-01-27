@@ -43,10 +43,10 @@ Resources:
           AttributeType: S
         - AttributeName: Description
           AttributeType: S
-        - AttributeName: Data
+        - AttributeName: Configuration
           AttributeType: S
       KeySchema:
-        - AttributeName: Account
+        - AttributeName: TransitGateway
           KeyType: HASH
         - AttributeName: CIDR
           KeyType: RANGE
