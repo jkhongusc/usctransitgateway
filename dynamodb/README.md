@@ -6,7 +6,7 @@ Data could have been stored in a SQL or no-SQL database.  DynamoDB was selected 
 
 ## Design
 Dynamo DB design:
-- partition key - AWS account
+- partition key - Transit Gateway
 - sort key - CIDR
 - global secondary index - none
 - local secondary index - none
@@ -15,9 +15,9 @@ Dynamo DB design:
 ## Attributes
 Attributes:
 - Hub information:
-  - Transit gateway - probably not required.  
-  - Route table(s) - probably not required
-  - Customer information:
+  - Transit gateway - 
+  - configuration - transit gateway configuration details in json
+- Customer information:
   - USC Department name
   - Owner - email
   - Tech contact - email address
@@ -28,14 +28,11 @@ Attributes:
   - CIDR
   - CFT
   - VPC
-  - Transit gateway id 
-  - transit gateway route table association
-  - transit gateway route table propagation
+  - Transit gateway id - use the same "Transit gateway" field from the hub
 - miscellaneous:
   - start date
   - end date
   - comments
   - description
-  - data
 
 ## Comments
