@@ -1,4 +1,4 @@
-# usctransitgateway-uswest2::DynamoDB component
+# usctransitgateway::DynamoDB component
 Information regarding the configuration data stored for the USC transit gateway project.  
 
 Data could have been stored in a SQL or no-SQL database.  DynamoDB was selected for this use-case which would be a small table of up to 500 items.
