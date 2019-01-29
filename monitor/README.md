@@ -3,6 +3,7 @@ Monitoring components for the USC transit gateway project
 - VPN 
 - TBD
 
+
 ## VPN monitoring - test script
 This test script runs on EC2 instance.  Make sure python2 and/or python3 are installed.  
 This code can be used as a basis to build a lambda VPN monitoring function.  
@@ -20,7 +21,7 @@ vpn-01dd07c2c43662ff0
 Shows all the VPN connections for the account.  For each VPN connection: vpn id, VPN state, tunnel states
 
 
-## Attributes
+## TBD
 
 
 ## Comments
