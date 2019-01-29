@@ -64,7 +64,7 @@ Resources:
             - 'dynamodb:DescribeReservedCapacity*'
             - 'dynamodb:DescribeLimits'
             - 'dynamodb:DescribeTimeToLive'
-          Resource: !Sub 'arn:aws:dynamodb:*:*:table/${AWS::StackName}-table'
+          Resource: '*'
         - Sid: Write
           Effect: Allow
           Action:
@@ -88,15 +88,21 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-        - Sid: ReadOnly
+        - Sid: ListAndDescribe
           Effect: Allow
           Action:
             - 'dynamodb:List*'
             - 'dynamodb:DescribeReservedCapacity*'
             - 'dynamodb:DescribeLimits'
             - 'dynamodb:DescribeTimeToLive'
+          Resource: '*'
+        - Sid: ReadOnly
+          Effect: Allow
+          Action:
             - 'dynamodb:GetItem'
             - 'dynamodb:BatchGetItem'
+            - 'dynamodb:Query'
+            - 'dynamodb:Scan'
           Resource: !Sub 'arn:aws:dynamodb:*:*:table/${AWS::StackName}-table'
  
  
