@@ -25,31 +25,82 @@ Resources:
       TableName: !Sub ${AWS::StackName}-table
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: Account
+        - AttributeName: TransitGateway
           AttributeType: S
         - AttributeName: Cidr
           AttributeType: S
-        - AttributeName: VpcId
-          AttributeType: S
-        - AttributeName: TransitGateway
-          AttributeType: S
-        - AttributeName: Department
-          AttributeType: S
-        - AttributeName: OwnerEmail
-          AttributeType: S
-        - AttributeName: TechEmail
-          AttributeType: S
-        - AttributeName: Comments
-          AttributeType: S
-        - AttributeName: Description
-          AttributeType: S
-        - AttributeName: Configuration
-          AttributeType: S
+#        - AttributeName: VpcId
+#          AttributeType: S
+#        - AttributeName: Account
+#          AttributeType: S
+#        - AttributeName: Department
+#          AttributeType: S
+#        - AttributeName: OwnerEmail
+#          AttributeType: S
+#        - AttributeName: TechEmail
+#          AttributeType: S
+#        - AttributeName: Comments
+#          AttributeType: S
+#        - AttributeName: Description
+#          AttributeType: S
+#        - AttributeName: Data
+#          AttributeType: S
       KeySchema:
         - AttributeName: TransitGateway
           KeyType: HASH
-        - AttributeName: CIDR
+        - AttributeName: Cidr
           KeyType: RANGE
+  TGWTableWritePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: TGWTableWrite
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Sid: ListAndDescribe
+          Effect: Allow
+          Action:
+            - 'dynamodb:List*'
+            - 'dynamodb:DescribeReservedCapacity*'
+            - 'dynamodb:DescribeLimits'
+            - 'dynamodb:DescribeTimeToLive'
+          Resource: !Sub 'arn:aws:dynamodb:*:*:table/${AWS::StackName}-table'
+        - Sid: Write
+          Effect: Allow
+          Action:
+            - 'dynamodb:BatchGet*'
+            - 'dynamodb:DescribeStream'
+            - 'dynamodb:DescribeTable'
+            - 'dynamodb:Get*'
+            - 'dynamodb:Query'
+            - 'dynamodb:Scan'
+            - 'dynamodb:BatchWrite*'
+            - 'dynamodb:CreateTable'
+            - 'dynamodb:Delete*'
+            - 'dynamodb:Update*'
+            - 'dynamodb:PutItem'
+          Resource: !Sub 'arn:aws:dynamodb:*:*:table/${AWS::StackName}-table'
+ 
+  TGWTableReadPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: TGWTableRead
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Sid: ReadOnly
+          Effect: Allow
+          Action:
+            - 'dynamodb:List*'
+            - 'dynamodb:DescribeReservedCapacity*'
+            - 'dynamodb:DescribeLimits'
+            - 'dynamodb:DescribeTimeToLive'
+            - 'dynamodb:GetItem'
+            - 'dynamodb:BatchGetItem'
+          Resource: !Sub 'arn:aws:dynamodb:*:*:table/${AWS::StackName}-table'
+ 
+ 
+ 
  
 # These are the values output by the CloudFormation template. Be careful
 # about changing any of them, because of them are exported with specific
@@ -58,4 +109,18 @@ Outputs:
   StackName:
     Description: 'Stack name.'
     Value: !Sub '${AWS::StackName}'
- 
+  TableName:
+    Description: 'DynamoDB Table name.'
+    Value: !Ref DynamoDBTGWTable
+    Export:
+      Name: !Sub '${AWS::StackName}-table'
+  WritePolicy:
+    Description: 'DynamoDB write policy name.'
+    Value: !Ref TGWTableWritePolicy
+    Export:
+      Name: !Sub '${AWS::StackName}-writepolicy'
+  ReadPolicy:
+    Description: 'DynamoDB read policy name.'
+    Value: !Ref TGWTableReadPolicy
+    Export:
+      Name: !Sub '${AWS::StackName}-readpolicy'
