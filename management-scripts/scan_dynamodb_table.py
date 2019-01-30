@@ -1,8 +1,6 @@
 import boto3
 
-# test script to get the states of the VPN tunnels
-# VPN state should be active
-# two VPN tunnels should be UP
+# prints out all the items from the DynamoDB table
 
 
 ddb = boto3.client('dynamodb')
