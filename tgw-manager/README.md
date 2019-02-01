@@ -22,6 +22,15 @@ To run on command-line:
 python3 show_tgw_attachments.py
 
 
+## Transit Gateway Manager - (early development) production application
+This test script runs on EC2 instance.  Make sure python2 and/or python3 are installed.  
+This application will access dynamodb table and run commands on the EC2 Transit Gateway
+
+To run on command-line: 
+python3 usc-manage-tgw.py
+
+
+
 
 ## TBD
 
