@@ -30,6 +30,7 @@ To run on command-line:
 python3 usc-manage-tgw.py
 
 ********************** TGW MANAGER **********************
+
 Checking that this EC2 meets requirements for TGW Manager ...
 
 - EC2 service supports TGW model...passed
@@ -38,6 +39,7 @@ Checking that this EC2 meets requirements for TGW Manager ...
 
 All requirements have passed!!
 ********************** TGW MANAGER **********************
+
 What would you like to do? Choose option A - I:
 --------------------------------------------------------
 A) Check Transit Gateway from DynamoDB
@@ -48,6 +50,7 @@ H) Help
 X) Exit
 --------------------------------------------------------
 > A
+
 (1) Transit Gateway, (1) VPCs, (1) VPNs
 Transit Gateway (tgw-07c16ca582c6fbee9) CIDR (10.254.0.0/16)
 
@@ -65,6 +68,7 @@ H) Help
 X) Exit
 --------------------------------------------------------
 > B
+
 (1) Transit Gateway, (3) VPCs, (1) VPNs
 Transit Gateway (tgw-07c16ca582c6fbee9)
 
