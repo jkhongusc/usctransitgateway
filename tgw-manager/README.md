@@ -38,6 +38,7 @@ Checking that this EC2 meets requirements for TGW Manager ...
 - IAM role for API permissions attached to EC2...passed
 
 All requirements have passed!!
+
 ********************** TGW MANAGER **********************
 
 What would you like to do? Choose option A - I:
