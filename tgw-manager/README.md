@@ -29,6 +29,53 @@ This application will access dynamodb table and run commands on the EC2 Transit 
 To run on command-line: 
 python3 usc-manage-tgw.py
 
+********************** TGW MANAGER **********************
+Checking that this EC2 meets requirements for TGW Manager ...
+
+- EC2 service supports TGW model...passed
+
+- IAM role for API permissions attached to EC2...passed
+
+All requirements have passed!!
+********************** TGW MANAGER **********************
+What would you like to do? Choose option A - I:
+--------------------------------------------------------
+A) Check Transit Gateway from DynamoDB
+B) Check Transit Gateway from EC2
+C) RAM: re-share TGWs (TBD)
+
+H) Help
+X) Exit
+--------------------------------------------------------
+> A
+(1) Transit Gateway, (1) VPCs, (1) VPNs
+Transit Gateway (tgw-07c16ca582c6fbee9) CIDR (10.254.0.0/16)
+
+    VPC (vpc-0f1ce0dca956a2c2d) CIDR (10.254.4.0/24)
+
+    VPN (vpn-01dd07c2c43662ff0) CIDR (207.151.53.254/32)
+
+What would you like to do? Choose option A - I:
+--------------------------------------------------------
+A) Check Transit Gateway from DynamoDB
+B) Check Transit Gateway from EC2
+C) RAM: re-share TGWs (TBD)
+
+H) Help
+X) Exit
+--------------------------------------------------------
+> B
+(1) Transit Gateway, (3) VPCs, (1) VPNs
+Transit Gateway (tgw-07c16ca582c6fbee9)
+
+    VPC (vpc-0ffddd04431937a08)
+    VPC (vpc-00e3e42349e3b8ca8)
+    VPC (vpc-0f1ce0dca956a2c2d)
+
+    VPN (vpn-01dd07c2c43662ff0)
+
+
+
 
 
 
