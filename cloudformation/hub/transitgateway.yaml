@@ -19,27 +19,6 @@ Parameters:
     Description: 'Tag: project'
 
 Resources:
-  HubTransitGateway:
-    Type: AWS::EC2::TransitGateway
-    Properties:
-      AmazonSideAsn: 65000
-      AutoAcceptSharedAttachments: disable
-      DefaultRouteTableAssociation: enable
-      DefaultRouteTablePropagation: enable
-#      Description: String
-      DnsSupport: enable
-      VpnEcmpSupport: enable
-      Tags: 
-        - Key: Name
-          Value: !Join ['-', [!Ref 'AWS::StackName', 'tgw']]
-        - Key: Admin
-          Value: !Ref 'TagAdmin'
-        - Key: AppEnv
-          Value: !Ref 'TagEnvironment'
-        - Key: Owner
-          Value: !Ref 'TagOwner'
-        - Key: Project
-          Value: !Ref 'TagProject'
   HubTransitGatewayAuto:
     Type: AWS::EC2::TransitGateway
     Properties:
@@ -79,7 +58,7 @@ Resources:
         - Key: Project
           Value: !Ref 'TagProject'
       Type: ipsec.1
-  HubCustomerGateway3:
+  HubCustomerGateway2:
     Type: AWS::EC2::CustomerGateway
     Properties:
       BgpAsn: 64901
