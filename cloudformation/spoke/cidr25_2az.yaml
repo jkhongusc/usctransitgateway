@@ -15,7 +15,7 @@ Parameters:
     Description: Availability Zone B CIDR Block (eg 10.1.254.64/26)
   Label:
     Type: String
-	Default: shared0
+    Default: shared0
     Description: Label used for naming
   TagAdmin:
     Type: String
