@@ -1,0 +1,270 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A stack for deploying (/25) VPC with 2 (/26) private subnets
+Parameters:
+  VPCCIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: VPC CIDR Block (eg 10.1.254.0/25)
+  AZACIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Availability Zone A CIDR Block (eg 10.1.254.0/26)
+  AZBCIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Availability Zone B CIDR Block (eg 10.1.254.64/26)
+  Label:
+    Type: String
+	Default: shared0
+    Description: Label used for naming
+  TagAdmin:
+    Type: String
+    Default: jkhong
+    Description: 'Tag: project admin (uid)'
+  TagEnvironment:
+    Type: String
+    Default: Confidential
+    Description: 'Tag: project environment enter - Public, Internal, Confidential'
+  TagOwner:
+    Type: String
+    Default: dcorley
+    Description: 'Tag: project owner (uid)'
+  TagService:
+    Type: String
+    Default: Kuali 
+    Description: 'Tag: project name'
+  DNS:
+    Type: CommaDelimitedList
+    Default: "10.73.130.31,10.73.3.31,10.73.3.32"
+    Description: "Comma-delimited list of three Domain Name Servers"
+  Domain:
+    Type: String
+    Default: "us-west-2.aws.usc.edu"
+    Description: "domain name"
+
+Resources:
+  # VPC with two private subnets
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+      - Key: Name
+        Value: ${Label} - VPC'
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+  SubnetAPrivate:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Ref AZACIDR
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${Label} - A private'
+      - Key: Reach
+        Value: private
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+  SubnetBPrivate:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Ref AZBCIDR
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${Label} - B private'
+      - Key: Reach
+        Value: private
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+
+  RouteTableAPrivate: # should be RouteTableAPrivate, but logical id was not changed for backward compatibility
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub 'spoke${ClassC} - A private'
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+  RouteTableBPrivate:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub 'spoke${ClassC} - B private'
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+  RouteTableAssociationAPrivate:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetAPrivate
+      RouteTableId: !Ref RouteTableAPrivate
+  RouteTableAssociationBPrivate:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetBPrivate
+      RouteTableId: !Ref RouteTableBPrivate
+
+
+  NetworkAclPrivate:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub 'spoke${ClassC} - Private'
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+  SubnetNetworkAclAssociationAPrivate:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref SubnetAPrivate
+      NetworkAclId: !Ref NetworkAclPrivate
+  SubnetNetworkAclAssociationBPrivate:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref SubnetBPrivate
+      NetworkAclId: !Ref NetworkAclPrivate
+	  
+
+  NetworkAclEntryInPrivateAllowVPC:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref NetworkAclPrivate
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: false
+      CidrBlock: '0.0.0.0/0'
+  NetworkAclEntryOutPrivateAllowVPC:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref NetworkAclPrivate
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: true
+      CidrBlock: '0.0.0.0/0'
+
+  DhcpOptions:
+    Type: 'AWS::EC2::DHCPOptions'
+    Properties: 
+      DomainNameServers: !Ref DNS
+      Tags:
+      - Key: Name
+        Value: !Sub 'spoke${ClassC} - DHCP'
+      - Key: Service_Owner
+        Value: !Ref TagOwner
+      - Key: Service_Name
+        Value: !Ref TagService
+      - Key: Admin
+        Value: !Ref TagAdmin
+      - Key: Environment
+        Value: !Ref TagEnvironment
+
+  VPCDHCPOptionsAssociation:
+    Type: 'AWS::EC2::VPCDHCPOptionsAssociation'
+    Properties: 
+      VpcId: !Ref VPC
+      DhcpOptionsId: !Ref DhcpOptions
+
+# These are the values output by the CloudFormation template. Be careful
+# about changing any of them, because of them are exported with specific
+# names so that the other task related CF templates can use them.
+Outputs:
+  StackName:
+    Description: 'Stack name.'
+    Value: !Sub '${AWS::StackName}'
+  AZA:
+    Description: 'AZ of A'
+    Value: !Select [0, !GetAZs '']
+    Export:
+      Name: !Sub '${AWS::StackName}-AZA'
+  AZB:
+    Description: 'AZ of B'
+    Value: !Select [1, !GetAZs '']
+    Export:
+      Name: !Sub '${AWS::StackName}-AZB'
+  CidrBlock:
+    Description: 'The set of IP addresses for the VPC.'
+    Value: !GetAtt 'VPC.CidrBlock'
+    Export:
+      Name: !Sub '${AWS::StackName}-CidrBlock'
+  VPC:
+    Description: 'VPC.'
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VPC'
+  SubnetsPrivate:
+    Description: 'Subnets private.'
+    Value: !Join [',', [!Ref SubnetAPrivate, !Ref SubnetBPrivate]]
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetsPrivate'
+  RouteTablesPrivate:
+    Description: 'Route tables private.'
+    Value: !Join [',', [!Ref RouteTableAPrivate, !Ref RouteTableBPrivate]]
+    Export:
+      Name: !Sub '${AWS::StackName}-RouteTablesPrivate'
+  SubnetAPrivate:
+    Description: 'Subnet A private.'
+    Value: !Ref SubnetAPrivate
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetAPrivate'
+  RouteTableAPrivate:
+    Description: 'Route table A private.'
+    Value: !Ref RouteTableAPrivate
+    Export:
+      Name: !Sub '${AWS::StackName}-RouteTableAPrivate'
+  SubnetBPrivate:
+    Description: 'Subnet B private.'
+    Value: !Ref SubnetBPrivate
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetBPrivate'
+  RouteTableBPrivate:
+    Description: 'Route table B private.'
+    Value: !Ref RouteTableBPrivate
+    Export:
+      Name: !Sub '${AWS::StackName}-RouteTableBPrivate'
