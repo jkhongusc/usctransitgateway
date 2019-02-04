@@ -107,7 +107,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - A private'
+        Value: !Sub '${Label} - A private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -122,7 +122,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - B private'
+        Value: !Sub '${Label} - B private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -149,7 +149,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - Private'
+        Value: !Sub '${Label} - Private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -192,10 +192,11 @@ Resources:
   DhcpOptions:
     Type: 'AWS::EC2::DHCPOptions'
     Properties: 
+      DomainName: !Ref Domain
       DomainNameServers: !Ref DNS
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - DHCP'
+        Value: !Sub '${Label} - DHCP'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
