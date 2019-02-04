@@ -53,7 +53,7 @@ Resources:
       InstanceTenancy: default
       Tags:
       - Key: Name
-        Value: ${Label} - VPC'
+        Value: !Sub '${Label} - VPC'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
