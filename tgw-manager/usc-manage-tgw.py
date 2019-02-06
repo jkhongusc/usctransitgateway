@@ -87,11 +87,11 @@ def check_model():
 check_model()
 
 
-sys.path.insert(0,'/home/ec2-user/tgw-manager/dependencies/')
+sys.path.insert(0,'dependencies/')
 
 # see if region file is already set or not
 try:
-	f = open('/home/ec2-user/tgw-manager/dependencies/region.py', 'r')
+	f = open('dependencies/region.py', 'r')
 except:
     os.system('clear')
     print("********************** TGW MANAGER **********************\n")
@@ -105,7 +105,7 @@ except:
         region = region.replace(' ','')
         m = re.match('^[a-z]{2}\-[a-z]{4,9}\-\d$', region)
         if m:
-            with open('/home/ec2-user/tgw-manager/dependencies/region.py', 'wb') as f:
+            with open('dependencies/region.py', 'w+') as f:
                 f.write("region=\'%s\'" % region)
         else:
             print("\nYou must specify a valid AWS region. Example: us-west-2\n")
