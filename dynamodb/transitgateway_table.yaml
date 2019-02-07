@@ -25,7 +25,7 @@ Resources:
       TableName: !Sub ${AWS::StackName}-table
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: TransitGateway
+        - AttributeName: TransitGatewayId
           AttributeType: S
         - AttributeName: Cidr
           AttributeType: S
@@ -46,7 +46,7 @@ Resources:
 #        - AttributeName: Data
 #          AttributeType: S
       KeySchema:
-        - AttributeName: TransitGateway
+        - AttributeName: TransitGatewayId
           KeyType: HASH
         - AttributeName: Cidr
           KeyType: RANGE
