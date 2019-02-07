@@ -4,15 +4,15 @@ Parameters:
   VPCCIDR:
     Type: String
     AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
-    Description: VPC CIDR Block (eg 10.1.254.0/25)
+    Description: VPC CIDR Block (eg 10.254.1.0/25)
   AZACIDR:
     Type: String
     AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
-    Description: Availability Zone A CIDR Block (eg 10.1.254.0/26)
+    Description: Availability Zone A CIDR Block (eg 10.254.1.0/26)
   AZBCIDR:
     Type: String
     AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
-    Description: Availability Zone B CIDR Block (eg 10.1.254.64/26)
+    Description: Availability Zone B CIDR Block (eg 10.254.1.64/26)
   Label:
     Type: String
     Default: shared0
