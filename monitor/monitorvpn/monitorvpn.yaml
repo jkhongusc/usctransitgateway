@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Lambda function: Monitors a list of VPN ids and sends notification to Slack'
+Parameters:
+  TagProject:
+    Type: String
+    Description: 'Tag: project'
+    Default: transit-gateway-us-west-2
+  TagAdmin:
+    Type: String
+    Description: 'Tag: project admin (uid)'
+    Default: jkhong
+  TagEnvironment:
+    Type: String
+    Description: 'Tag: project environment enter - Development, Test, Staging, Production'
+    Default: Production
+  TagOwner:
+    Type: String
+    Description: 'Tag: project owner (uid)'
+    Default: dcorley
+  LambdaName:
+    Type: String
+    Description: Name of Lambda function
+    Default: monitorvpn
+  ZipFileUrl:
+    Type: String
+    Description: URL to deployment zip file
+    Default: https://raw.githubusercontent.com/jkhongusc/usctransitgateway/master/monitor/monitorvpn/monitorvpn.zip
+Resources:
+  RoleLambdaMonitorVpn:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AWSLambdaBasicExecutionRole 
+      Path: /
+  LambdaMonitorVpn:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: RoleLambdaMonitorVpn
+    Properties:
+      Role: !GetAtt 
+        - RoleLambdaMonitorVpn
+        - Arn
+      Description: Monitors a list of VPN ids and sends notification to Slack
+      Code:
+        ZipFile: !Ref ZipFileUrl
+      FunctionName: !Ref LambdaName
+      Handler: main.lambda_handler
+      Runtime: python3.7
+      MemorySize: '128'
+      Timeout: '60'
