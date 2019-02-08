@@ -21,10 +21,26 @@ Parameters:
     Type: String
     Description: Name of Lambda function
     Default: monitorvpn
-  ZipFileUrl:
+  CodeS3Bucket:
     Type: String
-    Description: URL to deployment zip file
-    Default: https://raw.githubusercontent.com/jkhongusc/usctransitgateway/master/monitor/monitorvpn/monitorvpn.zip
+    Description: S3 bucket that contains code
+    Default: tgw-us-west-2-public
+  CodeS3Key:
+    Type: String
+    Description: S3 Key for the code
+    Default: monitorvpn.zip
+  SlackToken:
+    Type: String
+    Description: S3 Key for the code
+    Default: "xoxb-437417541040-437953887284-LkPnovZhk2wP87E9UguzBTw0"
+  SlackChannel:
+    Type: String
+    Description: S3 Key for the code
+    Default: uschomepageadmin
+  SlackName:
+    Type: String
+    Description: S3 Key for the code
+    Default: aws_notifications
 Resources:
   RoleLambdaMonitorVpn:
     Type: 'AWS::IAM::Role'
@@ -38,8 +54,25 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
-        - arn:aws:iam::aws:policy/AWSLambdaBasicExecutionRole 
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
+      Policies: 
+        - PolicyName: LambdaMonitorVpn
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - Effect: "Allow"
+                Action: "s3:GetObject"
+                Resource: 
+                  - !Join 
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Ref CodeS3Bucket
+                      - /*
+                  - !Join 
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Ref CodeS3Bucket
   LambdaMonitorVpn:
     Type: 'AWS::Lambda::Function'
     DependsOn: RoleLambdaMonitorVpn
@@ -49,7 +82,13 @@ Resources:
         - Arn
       Description: Monitors a list of VPN ids and sends notification to Slack
       Code:
-        ZipFile: !Ref ZipFileUrl
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: !Ref CodeS3Key
+      Environment:
+        Variables:
+          SLACKCHANNEL: !Ref SlackChannel
+          SLACKNAME: !Ref SlackName
+          SLACKTOKEN: !Ref SlackToken
       FunctionName: !Ref LambdaName
       Handler: main.lambda_handler
       Runtime: python3.7
