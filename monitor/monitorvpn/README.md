@@ -63,6 +63,7 @@ Configure test events (example configuration):
 
 
 ## suggested improvements
+- CloudFormation template for entire deployment including: IAM roles/policies, code S3 bucket, lambda
 - Error handling - should an Exception be thrown for any error
 - code cleanup
 - Microsoft Teams bot- add notification via Teams
