@@ -108,7 +108,7 @@ except:
         m = re.match('^[a-z]{2}\-[a-z]{4,9}\-\d$', region)
         if m:
             #with open('/home/ec2-user/tgw-manager/dependencies/region.py', 'wb') as f:
-            with open('dependencies/region.py', 'wb') as f:
+            with open('dependencies/region.py', 'w+') as f:
                 f.write("region=\'%s\'" % region)
         else:
             print("\nYou must specify a valid AWS region. Example: us-west-2\n")
