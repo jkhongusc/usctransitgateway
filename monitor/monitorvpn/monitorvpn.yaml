@@ -32,7 +32,7 @@ Parameters:
   SlackToken:
     Type: String
     Description: S3 Key for the code
-    Default: "xoxb-437417541040-437953887284-LkPnovZhk2wP87E9UguzBTw0"
+    Default: ""
   SlackChannel:
     Type: String
     Description: S3 Key for the code
