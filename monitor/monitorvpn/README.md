@@ -2,7 +2,16 @@
 Monitors VPN connections
 
 Describe functionality (TBD)
-
+- inputs: 
+  - region
+  - list of VPN (ids) to monitor
+- Error condition if:
+  - VPN is not found
+  - VPN state is not 'available'
+  - VPN tunnels are 'DOWN' or not 'UP'
+- outputs:
+  - CloudWatch logs
+  - Slack Channel
 
 ## environment
 Environment was created using virtualenv:
