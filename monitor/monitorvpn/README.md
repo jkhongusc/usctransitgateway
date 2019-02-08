@@ -60,3 +60,11 @@ Configure test events (example configuration):
     "vpn-01dd07c2c43662ff0"
   ]
 }
+
+
+## suggested improvements
+- Error handling - should an Exception be thrown for any error
+- code cleanup
+- Microsoft Teams bot- add notification via Teams
+- 
+
