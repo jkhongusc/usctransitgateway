@@ -28,6 +28,8 @@ pip install slackclient
 
 mkdir monitorvpn
 
+cd monitorvpn
+
 pip install slackclient --target .
 
 
