@@ -26,13 +26,25 @@ pip install slackclient
 
 
 ## deployment
-cd monitorvpn/lib/python3.7/site-packages
+To create deployment (zip) file:
 
-zip -r9 ../../../../mylambda.zip *
+cd monitorvpn
 
-zip -g mylambda.zip main.py
+./create_zip.sh
 
-aws s3 cp mylambda.zip https://s3.amazonaws.com/jkhong-test-public/mylambda.zip
+
+Copy deployment script to an S3 bucket:
+
+aws s3 cp monitorvpn.zip https://s3.amazonaws.com/jkhong-test-public/monitorvpn.zip
+
+
+## CloudFormation Template
+[monitorvpn.yaml](monitorvpn.yaml) - CFT that creates these AWS resources to deploy as lambda function:
+- IAM lambda role: 
+  - AmazonEC2ReadOnlyAccess: EC2 read-only
+  - AWSLambdaBasicExecutionRole: lambda basic execution
+  - S3 read/get access
+- Lambda function
 
 
 ## lambda configuration
