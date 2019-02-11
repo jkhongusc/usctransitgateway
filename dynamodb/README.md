@@ -12,7 +12,8 @@ Dynamo DB design:
 - local secondary index - none
 - attributes (see below)
 
-## Attributes
+
+## Attributes - planning
 Attributes:
 - Hub information:
   - Transit gateway - 
@@ -35,4 +36,25 @@ Attributes:
   - comments
   - description
 
+
+## Attributes - implementation
+Attributes Names, Type, and Description:
+- Account [String]: AWS account number
+- Cidr [String]: CIDR
+- TransitGatewayId [String]: Transit Gateway ID that resource is attached/associated
+- Department [String]: USC department name
+- OwnerEmail [String]: Business owner's email address
+- TechEmail [String]: Business technical contact email address
+- ResourceType [String]: type of resource.  Should be one of: 
+  - hub - signifies that this entry is for the transit gateway.  There should only be one hub, but this design allows the possibility of multiple hubs (transit gateways per region)
+  - vpc - signifies that a VPC is associated with the transit gateway
+  - vpn - signifies that a VPN is associated with the transit gateway
+- ResourceId [String]: AWS ID of ResourceType
+- Configuration [String]: any extra configuration information required.  Might be required for hub
+- Description [String]: any extra information to describe entry
+-  [String]:
+
+
 ## Comments
+- For DynamoDB CFT, only attributes used for keys or indexing are defined in schema
+
