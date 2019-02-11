@@ -14,15 +14,17 @@ Describe functionality (TBD)
   - Slack Channel
 
 ## environment
-Environment was created using virtualenv:
+- Environment was created using virtualenv:
 
 virtualenv monitorvpn
-
 cd monitorvpn/bin
-
 source activate
-
 pip install slackclient
+
+- Environment was created manually:
+
+mkdir monitorvpn
+pip install slackclient --target .
 
 
 ## deployment
