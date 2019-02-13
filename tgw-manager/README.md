@@ -1,9 +1,17 @@
 # usctransitgateway::management-scripts component
 Management scripts for the USC transit gateway project.  Customer information is stored in dynamoDB table.  Create scripts for:
-- transit gateway: resource share the tgw to a single account 
-- transit gateway: resource share the tgw to a multiple accounts.  Compare attachments in dynamoDB vs attachments on the tgw.  Send resource shares to missing VPCs
+- transit gateway: resource share (invitation) the tgw to a single account 
+- transit gateway: resource share (invitation) the tgw to a multiple accounts.  Compare attachments in dynamoDB vs attachments on the tgw.  Send resource shares to missing VPCs
 - transit gateway: report attachments in dynamoDB vs attachments on the tgw
 - TBD
+
+
+## IAM prerequisites
+Need to create an IAM role to apply to EC2 that has these policies:
+- AmazonS3FullAccess
+- AmazonEC2ReadOnlyAccess
+- TGWTableRead (custom policy)
+- RAM (resource access manager - all read/write access - custom policy to-be-created)
 
 
 ## DynamoDB scan - test script
