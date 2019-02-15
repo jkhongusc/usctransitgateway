@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: A stack for deploying (/25) VPC with 2 (/26) private subnets
+Description: A stack for deploying a (manually sized) VPC with 2 (manually sized) private subnets in separate Availability Zones
 Parameters:
   VPCCIDR:
     Type: String
