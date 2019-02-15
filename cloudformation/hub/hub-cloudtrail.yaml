@@ -41,12 +41,12 @@ Resources:
           Value: !Ref TagEnvironment
         - Key: Owner
           Value: !Ref TagOwner
-      LifecycleConfiguration:
-        Rules:
-          - Id: Expire365days
-            ExpirationInDays: '365'
-            Prefix: ''
-            Status: Enabled
+#      LifecycleConfiguration:
+#        Rules:
+#          - Id: Expire365days
+#            ExpirationInDays: '365'
+#            Prefix: ''
+#            Status: Enabled
     DeletionPolicy: Retain
   S3BucketWWWLogsCloudtrailBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
