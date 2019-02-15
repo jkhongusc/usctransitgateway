@@ -47,11 +47,14 @@ def lambda_handler(event, context):
                 if (vpn['State'] != 'available' or vpn['VgwTelemetry'][0]['Status'] != 'UP' or
                     vpn['VgwTelemetry'][1]['Status'] != 'UP'): 
                     # error
+                    print( "[ERROR] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
+                    slack_client.api_call( "chat.postMessage", channel=schannel, text=  "[ERROR] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
                     continue
                 else:
                     # success
                     print( "[SUCCESS] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
-                    slack_client.api_call( "chat.postMessage", channel=schannel, text=  "[SUCCESS] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
+                    # do not send slack output for success - except for testing
+                    #slack_client.api_call( "chat.postMessage", channel=schannel, text=  "[SUCCESS] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
 
     except Exception as e:
         print("Exception: "+ str(e))
