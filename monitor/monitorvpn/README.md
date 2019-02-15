@@ -43,7 +43,7 @@ cd monitorvpn
 
 Copy deployment script to an S3 bucket:
 
-aws s3 cp monitorvpn.zip https://s3.amazonaws.com/jkhong-test-public/monitorvpn.zip
+aws s3 cp monitorvpn.zip s3://jkhong-test-public/monitorvpn.zip
 
 
 ## CloudFormation Template
