@@ -19,5 +19,12 @@ I recommend creating a development environment on a standard EC2 Linux instance 
   - apply security group (SG can be modified post launch)
   - apply EC2 key pair
 - ssh to instance and install any necessary packages:
-  - sudo yum install git
-  - python3
+  - sudo yum update -y
+  - sudo yum install git -y 
+  - sudo yum install python3 -y
+  - sudo /usr/bin/pip3 install boto3
+  - sudo /usr/bin/pip3 install virtualenv
+  - sudo /usr/bin/pip3 install --upgrade awscli
+
+
+  
