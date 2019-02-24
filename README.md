@@ -6,7 +6,7 @@ USC transit gateway project
 Ask owner for read/write access.  
 
 To clone:
-git clone https://<github user>:<github token>@github.com/jkhongusc/usctransitgateway .
+git clone https://GITHUB_USERNAME:GITHUB_TOKEN@github.com/jkhongusc/usctransitgateway .
 
 
 ## Development environment
