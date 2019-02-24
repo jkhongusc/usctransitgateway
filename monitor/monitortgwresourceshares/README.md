@@ -12,22 +12,22 @@ Describe functionality (TBD)
 
 ## environment
 - Environment was created using virtualenv:
-  - virtualenv monitorvpn
-  - cd monitorvpn/bin
+  - virtualenv monitortgwresourceshares
+  - cd monitortgwresourceshares/bin
   - source activate
   - pip install slackclient
   - deactivate
 
 - Environment was created manually:
-  - mkdir monitorvpn
-  - cd monitorvpn
+  - mkdir monitortgwresourceshares
+  - cd monitortgwresourceshares
   - pip install slackclient --target .
 
 
 ## deployment
 To create deployment (zip) file:
 
-cd monitorvpn
+cd monitortgwresourceshares
 
 ./create_zip.sh
 
@@ -38,7 +38,7 @@ aws s3 cp monitortgwresourceshares.zip s3://jkhong-test-public/monitortgwresourc
 
 
 ## CloudFormation Template
-[monitorvpn.yaml](monitorvpn.yaml) - CFT that creates these AWS resources to deploy as lambda function:
+[monitortgwresourceshares.yaml](monitortgwresourceshares.yaml) - CFT that creates these AWS resources to deploy as lambda function:
 - IAM lambda role: 
   - AmazonEC2ReadOnlyAccess: EC2 read-only
   - AWSLambdaBasicExecutionRole: lambda basic execution
