@@ -1,13 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: A stack for deploying VPC with 3 private subnets
+Description: A stack for deploying a (manually sized) VPC with 2 (manually sized) private subnets in separate Availability Zones
 Parameters:
-  ClassC:
-    Type: Number
-    Default: 8
-    MinValue: 0
-    MaxValue: 255
-    ConstraintDescription: 'Must be in the range [0-255]'
-    Description: 'Class C of VPC (10.254.XXX.0.0/24)'
+  VPCCIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: VPC CIDR Block (eg 10.254.1.0/25)
+  AZACIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Availability Zone A CIDR Block (eg 10.254.1.0/26)
+  AZBCIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Availability Zone B CIDR Block (eg 10.254.1.64/26)
+  AZCCIDR:
+    Type: String
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Description: Availability Zone C CIDR Block (eg 10.254.1.128/26)
+  Label:
+    Type: String
+    Default: shared0
+    Description: Label used for naming
   TagAdmin:
     Type: String
     Default: jkhong
@@ -28,19 +41,23 @@ Parameters:
     Type: CommaDelimitedList
     Default: "10.73.130.31,10.73.3.31,10.73.3.32"
     Description: "Comma-delimited list of three Domain Name Servers"
+  Domain:
+    Type: String
+    Default: "us-west-2.aws.usc.edu"
+    Description: "domain name"
 
 Resources:
-  # VPC with three private subnets
+  # VPC with two private subnets
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CidrBlock: !Sub '10.254.${ClassC}.0/24'
+      CidrBlock: !Ref VPCCIDR
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
       Tags:
       - Key: Name
-        Value: !Sub '10.254.${ClassC}.0/24 - spoke${ClassC} - VPC'
+        Value: !Sub '${Label} - VPC'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -53,11 +70,11 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [0, !GetAZs '']
-      CidrBlock: !Sub '10.254.${ClassC}.0/26'
+      CidrBlock: !Ref AZACIDR
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - A private'
+        Value: !Sub '${Label} - A private'
       - Key: Reach
         Value: private
       - Key: Service_Owner
@@ -72,11 +89,11 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [1, !GetAZs '']
-      CidrBlock: !Sub '10.254.${ClassC}.64/26'
+      CidrBlock: !Ref AZBCIDR
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - B private'
+        Value: !Sub '${Label} - B private'
       - Key: Reach
         Value: private
       - Key: Service_Owner
@@ -91,11 +108,11 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [2, !GetAZs '']
-      CidrBlock: !Sub '10.254.${ClassC}.128/26'
+      CidrBlock: !Ref AZCCIDR
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - C private'
+        Value: !Sub '${Label} - C private'
       - Key: Reach
         Value: private
       - Key: Service_Owner
@@ -107,13 +124,14 @@ Resources:
       - Key: Environment
         Value: !Ref TagEnvironment
 
+
   RouteTableAPrivate: # should be RouteTableAPrivate, but logical id was not changed for backward compatibility
     Type: 'AWS::EC2::RouteTable'
     Properties:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - A private'
+        Value: !Sub '${Label} - A private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -128,7 +146,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - B private'
+        Value: !Sub '${Label} - B private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -143,7 +161,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - C private'
+        Value: !Sub '${Label} - C private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -174,7 +192,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - Private'
+        Value: !Sub '${Label} - Private'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -199,6 +217,7 @@ Resources:
       SubnetId: !Ref SubnetCPrivate
       NetworkAclId: !Ref NetworkAclPrivate
 
+
   NetworkAclEntryInPrivateAllowVPC:
     Type: 'AWS::EC2::NetworkAclEntry'
     Properties:
@@ -221,10 +240,11 @@ Resources:
   DhcpOptions:
     Type: 'AWS::EC2::DHCPOptions'
     Properties: 
+      DomainName: !Ref Domain
       DomainNameServers: !Ref DNS
       Tags:
       - Key: Name
-        Value: !Sub 'spoke${ClassC} - DHCP'
+        Value: !Sub '${Label} - DHCP'
       - Key: Service_Owner
         Value: !Ref TagOwner
       - Key: Service_Name
@@ -259,7 +279,7 @@ Outputs:
       Name: !Sub '${AWS::StackName}-AZB'
   AZC:
     Description: 'AZ of C'
-    Value: !Select [2, !GetAZs '']
+    Value: !Select [s, !GetAZs '']
     Export:
       Name: !Sub '${AWS::StackName}-AZC'
   CidrBlock:
@@ -279,7 +299,7 @@ Outputs:
       Name: !Sub '${AWS::StackName}-SubnetsPrivate'
   RouteTablesPrivate:
     Description: 'Route tables private.'
-    Value: !Join [',', [!Ref RouteTableAPrivate, !Ref RouteTableBPrivate, !Ref RouteTableCPrivate]]
+    Value: !Join [',', [!Ref RouteTableAPrivate, !Ref RouteTableBPrivate], !Ref RouteTableCPrivate]]
     Export:
       Name: !Sub '${AWS::StackName}-RouteTablesPrivate'
   SubnetAPrivate:
@@ -312,4 +332,3 @@ Outputs:
     Value: !Ref RouteTableCPrivate
     Export:
       Name: !Sub '${AWS::StackName}-RouteTableCPrivate'
-
