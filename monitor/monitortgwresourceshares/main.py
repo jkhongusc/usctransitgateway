@@ -93,28 +93,45 @@ def lambda_handler(event, context):
 
         # iterate through DynamoDB VPC list, ignore VPCs from master account
         # check if VPC is in RAM principal list, if not create alert
+	# for errors: should automatically create new resource share with principal
         print ("\nNotifications")
-        print ("Check #1: DynamoDB list")
+        print ("Check #1: DynamoDB and RAM")
         for vpcitem in vpclist:
             if (vpcitem['Account'] == tgwitem['Account']):
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in master account" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
                 continue
-            if not any (d['Account'] == vpcitem['Account'] for d in vpclist):
-                print("    VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+            #if not any (d['Account'] == vpcitem['Account'] for d in vpclist):
+            if not any (d['id'] == vpcitem['Account'] for d in ramprincipals):
+                print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+	        # TBD - for errors: should automatically create new resource share with principal
             else:
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
 
 
+        # iterate through DynamoDB VPC list, ignore VPCs from master account
+        # check if VPC is in Transit Gateway Attachment list, if not create alert
+        # for errors: account admin has to manually re-attach
+        print ("Check #2: DynamoDB and Transit Gateway Attachments")
+        for vpcitem in vpclist:
+            if (vpcitem['Account'] == tgwitem['Account']):
+                print("    VPC (%s) CIDR (%s) AWS (%s) is found in master account" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                continue
+            if not any (d['VpcOwnerId'] == vpcitem['Account'] for d in vpcattachments):
+                print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+            else:
+                print("    VPC (%s) CIDR (%s) AWS (%s) is found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+
+
+        '''
         # iterate through RAM list which is a list of VPCs
         # check if RAM VPC is in DynamoDB list, if not create alert
-        print ("Check #2: RAM list")
+        print ("Check #3: RAM list")
         for ramprincipal in ramprincipals:
             if not any (d['Account'] == ramprincipal['id'] for d in vpclist):
-                print("    VPC (%s) CIDR (%s) AWS (%s) is not found in DynamoDB list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                print("    [ERROR] AWS (%s) is not found in DynamoDB list" % (ramprincipal['id']) )
             else:
-                print("    VPC (%s) CIDR (%s) AWS (%s) is found in DynamoDB list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
-
-
+                print("    AWS (%s) is found in DynamoDB list" % (ramprincipal['id']) )
+        '''
 
 
 
