@@ -23,10 +23,12 @@ from __future__ import print_function
 import boto3
 
 from dynamodb import TgwDynamoDb
+from ec2 import TgwEc2
 from ram import TgwRam
 
-print('Loading function')
-cw = boto3.client('cloudwatch')
+
+#print('Loading function')
+#cw = boto3.client('cloudwatch')
 
 
 
@@ -54,27 +56,68 @@ def lambda_handler(event, context):
     #slack_client.api_call( "chat.postMessage", channel=schannel, text="test from EC2")
     
     try:
-        #ec2 = boto3.client('ec2',region_name=region)
-        #response = ec2.describe_vpn_connections()
+
         print ("starting")
         myram = TgwRam(region)
         ramprincipals = myram.get_principals()
+        print("[RAM] Transit Gateway, (%d) Principals" % (len(ramprincipals)) )
+        #print (ramprincipals)
+        for ramprincipal in ramprincipals:
+            print("    AWS (%s)" % (ramprincipal['id']) )
+
+        myec2 = TgwEc2(region)
+        vpcattachments = myec2.get_transit_gateway_vpc_attachments()
+        print("[EC2] Transit Gateway Attachments (%d) " % (len(vpcattachments)) )
+        for vpcattachment in vpcattachments:
+            print("    AWS (%s)" % (vpcattachment['VpcOwnerId']) )
+
         mydynamo = TgwDynamoDb(region)
-        print("Transit Gateway, (%d) Principals, " % (len(ramprincipals)) )
         tgwlist = mydynamo.get_transit_gateway() 
         vpclist = mydynamo.get_vpc() 
         vpnlist = mydynamo.get_vpn() 
         #print ("\n")
-        print("(%d) Transit Gateway, (%d) VPCs, (%d) VPNs" % (len(tgwlist),len(vpclist),len(vpnlist)) )
+        print("[DynamoDb] (%d) Transit Gateway, (%d) VPCs, (%d) VPNs" % (len(tgwlist),len(vpclist),len(vpnlist)) )
         for tgwitem in tgwlist:
-            print("Transit Gateway (%s) CIDR (%s)" % (tgwitem['TransitGatewayId'],tgwitem['Cidr']) )
+            print("Transit Gateway (%s) CIDR (%s) AWS (%s)" % (tgwitem['TransitGatewayId'],tgwitem['Cidr'],tgwitem['Account']) )
         #print ("\n")
+        #print (vpclist)
         for vpcitem in vpclist:
-            print("    VPC (%s) CIDR (%s)" % (vpcitem['ResourceId'],vpcitem['Cidr']) )
+            print("    VPC (%s) CIDR (%s) AWS (%s)" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
         #print ("\n")
+        #print (vpnlist)
         for vpnitem in vpnlist:
-            print("    VPN (%s) CIDR (%s)" % (vpnitem['ResourceId'],vpnitem['Cidr']) )
+            print("    VPN (%s) CIDR (%s) AWS (%s)" % (vpnitem['ResourceId'],vpnitem['Cidr'],vpnitem['Account']) )
         
+
+        # Add comparisons/notification/alerts here
+
+        # iterate through DynamoDB VPC list, ignore VPCs from master account
+        # check if VPC is in RAM principal list, if not create alert
+        print ("\nNotifications")
+        print ("Check #1: DynamoDB list")
+        for vpcitem in vpclist:
+            if (vpcitem['Account'] == tgwitem['Account']):
+                print("    VPC (%s) CIDR (%s) AWS (%s) is found in master account" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                continue
+            if not any (d['Account'] == vpcitem['Account'] for d in vpclist):
+                print("    VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+            else:
+                print("    VPC (%s) CIDR (%s) AWS (%s) is found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+
+
+        # iterate through RAM list which is a list of VPCs
+        # check if RAM VPC is in DynamoDB list, if not create alert
+        print ("Check #2: RAM list")
+        for ramprincipal in ramprincipals:
+            if not any (d['Account'] == ramprincipal['id'] for d in vpclist):
+                print("    VPC (%s) CIDR (%s) AWS (%s) is not found in DynamoDB list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+            else:
+                print("    VPC (%s) CIDR (%s) AWS (%s) is found in DynamoDB list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+
+
+
+
+
         
         '''
         for monitor_tgw in tgws:
