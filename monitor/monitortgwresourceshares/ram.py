@@ -15,7 +15,7 @@ class TgwRam:
 
     def get_principals (self):
         response = self.client.list_principals(resourceOwner='SELF')
-        return response
+        return response['principals']
 
 
     def get_transit_gateway(self):
