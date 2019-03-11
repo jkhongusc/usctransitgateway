@@ -13,9 +13,12 @@ class TgwRam:
         #print (self.cache)
         #sys.exit()
 
-    def get_principals (self):
+    def list_principals (self):
         response = self.client.list_principals(resourceOwner='SELF')
         return response['principals']
+
+    def get_principals (self):
+        return self.list_principals()
 
 
     def get_transit_gateway(self):
@@ -60,6 +63,10 @@ class TgwRam:
             #vpn_list.append(vpn_item)
             vpn_list.append(item)
         return vpn_list
+
+    def get_resource_share_associations(self,associationType,principal,associationStatus):
+        response = self.client.get_resource_share_associations(associationType=associationType,principal=principal,associationStatus=associationStatus)
+        return response['resourceShareAssociations']
 
     def create_resource_share(self,name,arns,principals):
         response = self.client.create_resource_share(name=name,resourceArns=arns,principals=principals,allowExternalPrincipals=True)
