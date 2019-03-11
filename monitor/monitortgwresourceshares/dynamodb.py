@@ -41,7 +41,7 @@ class TgwDynamoDb:
         for item in self.cache:
             # should we only send specific keys or the whole dict obj - code for both
             vpc_item = { 'ResourceId': None, 'Cidr': None }
-            if item['ResourceType'] != 'vpc':
+            if item['ResourceType'] != 'vpc' and item['ResourceType'] != 'hub':
                 continue
             vpc_item['ResourceId'] = item['ResourceId']
             vpc_item['Cidr'] = item['Cidr']
