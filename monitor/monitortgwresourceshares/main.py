@@ -26,6 +26,7 @@ import boto3
 from dynamodb import TgwDynamoDb
 from ec2 import TgwEc2
 from ram import TgwRam
+from slackclient import SlackClient
 
 
 #print('Loading function')
@@ -35,8 +36,8 @@ from ram import TgwRam
 
 def lambda_handler(event, context):
     # check to make sure all required parameters are defined
-    #if 'SLACKTOKEN' not in os.environ:
-    #    raise Exception('SLACKTOKEN environment variable not set')
+    if 'SLACKTOKEN' not in os.environ:
+        raise Exception('SLACKTOKEN environment variable not set')
     if 'SLACKNAME' not in os.environ:
         raise Exception('SLACKNAME environment variable not set')
     if 'SLACKCHANNEL' not in os.environ:
@@ -49,15 +50,20 @@ def lambda_handler(event, context):
     if 'RAMSHARENAME' not in event:
         raise Exception('RAMSHARENAME event variable not set')
 
-    #stoken=os.environ['SLACKTOKEN']
+    stoken=os.environ['SLACKTOKEN']
     sname=os.environ['SLACKNAME']
     schannel=os.environ['SLACKCHANNEL']
     region=event['REGION']
     tgws=event['TRANSITGATEWAY']
     ramsharenames=event['RAMSHARENAME']
 
-    #slack_client = SlackClient(stoken)
-    #slack_client.api_call( "chat.postMessage", channel=schannel, text="test from EC2")
+
+    slack_client = SlackClient(stoken)
+    #slack_client.api_call( "chat.postMessage", channel=schannel, text="test from EC2",username=sname)
+
+    def slack_msg(msg):
+        slack_client.api_call( "chat.postMessage", channel=schannel, text=msg,username=sname)
+
     
     try:
 
@@ -101,6 +107,7 @@ def lambda_handler(event, context):
         for vpcitem in vpclist:
             if not any (d['VpcId'] == vpcitem['ResourceId'] for d in vpcattachments):
                 print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                slack_msg("[ERROR - MISSING VPC] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
             else:
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
 
@@ -112,6 +119,7 @@ def lambda_handler(event, context):
         for vpcattachment in vpcattachments:
             if not any (d['ResourceId'] == vpcattachment['VpcId'] for d in vpclist):
                 print("    [ERROR] VPC (%s) AWS (%s) is not found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
+                slack_msg("[ERROR - UNAUTHORIZED] VPC (%s) AWS (%s) is not found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
             else:
                 print("    VPC (%s) AWS (%s) is found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
 
@@ -127,11 +135,18 @@ def lambda_handler(event, context):
             #if not any (d['Account'] == vpcitem['Account'] for d in vpclist):
             if not any (d['id'] == vpcitem['Account'] for d in ramprincipals):
                 print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
-                print ("        sending RAM resource share to: " + vpcitem['Account'])
+                slack_msg("[ERROR - LOST INVITATION] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
                 #print ("%s arn:aws:ec2:%s:%s:transit-gateway/%s %s," %( ramsharenames[0], region, tgwitem['Account'], tgwitem['TransitGatewayId'], vpcitem['Account'] ))
-	        # TBD - for errors: automatically create new resource share with principal
-                response = myram.create_resource_share( ramsharenames[0],  ['arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId'] ],[ vpcitem['Account']])
-                #print (response)
+                # need to check if there are pending invitations.  Max 20 pending invitations
+                response = myram.get_resource_share_associations( 'PRINCIPAL',vpcitem['Account'], 'ASSOCIATING' )
+                if (response):
+                    # Found a pending invitation
+                    print ("        pending RAM resource share/invitation to: " + vpcitem['Account'])
+                    #print (response)
+                else:
+                    print ("        creating RAM resource share/invitation to: " + vpcitem['Account'])
+                    response = myram.create_resource_share( ramsharenames[0],  ['arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId'] ],[ vpcitem['Account']])
+                    #print (response)
 
             else:
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
@@ -142,44 +157,6 @@ def lambda_handler(event, context):
 
 
 
-        '''
-        # iterate through RAM list which is a list of VPCs
-        # check if RAM VPC is in DynamoDB list, if not create alert
-        print ("Check #3: RAM list")
-        for ramprincipal in ramprincipals:
-            if not any (d['Account'] == ramprincipal['id'] for d in vpclist):
-                print("    [ERROR] AWS (%s) is not found in DynamoDB list" % (ramprincipal['id']) )
-            else:
-                print("    AWS (%s) is found in DynamoDB list" % (ramprincipal['id']) )
-        '''
-
-
-
-        
-        '''
-        for monitor_tgw in tgws:
-            print( "processing "+monitor_tgw)
-            if not any(vpn['VpnConnectionId'] == monitor_tgw for vpn in tgws):
-                print( "[ERROR] "+monitor_tgw+" not found")
-                #slack_client.api_call( "chat.postMessage", channel=schannel, text="[ERROR] "+monitor_tgw+" not found")
-                continue
-            for vpn in tgws:
-                if (vpn['VpnConnectionId'] != monitor_tgw):
-                    print ("skipping: "+vpn['VpnConnectionId'])
-                    continue
-                if (vpn['State'] != 'available' or vpn['VgwTelemetry'][0]['Status'] != 'UP' or
-                    vpn['VgwTelemetry'][1]['Status'] != 'UP'): 
-                    # error
-                    print( "[ERROR] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
-                    #slack_client.api_call( "chat.postMessage", channel=schannel, text=  "[ERROR] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
-                    continue
-                else:
-                    # success
-                    print( "[SUCCESS] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
-                    # do not send slack output for success - except for testing
-                    #slack_client.api_call( "chat.postMessage", channel=schannel, text=  "[SUCCESS] "+vpn['VpnConnectionId']+" is "+vpn['State']+"; tunnels: "+vpn['VgwTelemetry'][0]['Status']+" : "+vpn['VgwTelemetry'][1]['Status'])
-
-       '''
     except Exception as e:
         print("Exception: "+ str(e))
     
