@@ -60,4 +60,11 @@ class TgwRam:
             #vpn_list.append(vpn_item)
             vpn_list.append(item)
         return vpn_list
+
+    def create_resource_share(self,name,arns,principals):
+        response = self.client.create_resource_share(name=name,resourceArns=arns,principals=principals,allowExternalPrincipals=True)
+        return response
+
+
+
         
