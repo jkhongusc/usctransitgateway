@@ -170,8 +170,7 @@ Resources:
   uscTGWAttachment:
     Type: "AWS::EC2::TransitGatewayAttachment"
     Properties:
-      SubnetIds:
-        - !Ref SubnetAPrivate
+      SubnetIds: !Ref SubnetAPrivate
       VpnGatewayId: !Ref VPNGateway
       VpcId: !Ref VPC
 
