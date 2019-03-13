@@ -37,7 +37,11 @@ Parameters:
     Type: String
     Default: "us-west-2.aws.usc.edu"
     Description: "domain name"
-
+  VPNGateway:
+    Type: String
+    Default: tgw-0140bb4dfd328a656
+    Description: 'ITS Transit Gateway ID'
+    
 Resources:
   # VPC with two private subnets
   VPC:
@@ -162,6 +166,14 @@ Resources:
     Properties: 
       VpcId: !Ref VPC
       DhcpOptionsId: !Ref DhcpOptions
+      
+  uscTGWAttachment:
+    Type: "AWS::EC2::TransitGatewayAttachment"
+    Properties:
+      SubnetIds:
+        - !Ref SubnetAPrivate
+      VpnGatewayId: !Ref VPNGateway
+      VpcId: !Ref VPC
 
 # These are the values output by the CloudFormation template. Be careful
 # about changing any of them, because of them are exported with specific
