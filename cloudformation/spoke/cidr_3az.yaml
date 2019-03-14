@@ -39,8 +39,8 @@ Parameters:
     Description: 'Tag: project name'
   DNS:
     Type: CommaDelimitedList
-    Default: "10.73.130.31,10.73.3.31,10.73.3.32"
-    Description: "Comma-delimited list of three Domain Name Servers"
+    Default: "10.254.0.2,"
+    Description: "IP address shared0 Domain Name Servers"
   Domain:
     Type: String
     Default: "us-west-2.aws.usc.edu"
@@ -267,6 +267,9 @@ Resources:
   uscTGWAttachment:
     Type: "AWS::EC2::TransitGatewayAttachment"
     Properties:
+      Tags: 
+        - Key: Name
+          Value: !Sub '${Label}'    
       SubnetIds:
         - !Ref SubnetAPrivate
         - !Ref SubnetBPrivate
