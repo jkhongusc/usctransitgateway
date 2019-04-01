@@ -225,7 +225,7 @@ Resources:
       SubnetIds:
         - !Ref SubnetAPrivate
         - !Ref SubnetBPrivate
-      VpnGatewayId: !Ref VPNGateway
+      TransitGatewayId: !Ref VPNGateway
       VpcId: !Ref VPC
 
 # These are the values output by the CloudFormation template. Be careful
