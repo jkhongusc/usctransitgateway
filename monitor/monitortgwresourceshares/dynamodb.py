@@ -62,4 +62,22 @@ class TgwDynamoDb:
             #vpn_list.append(vpn_item)
             vpn_list.append(item)
         return vpn_list
-        
+
+    def get_resource_shares(self):
+        #print (self.cache)
+        rs_list = []
+        for item in self.cache:
+            # should we only send specific keys or the whole dict obj - code for both
+            rs_item = { 'resourceShareArn': None }
+            if item['ResourceType'] != 'hub':
+                continue
+            config = json.loads(item['Configuration'])
+            #rs_item['resourceShareArn'] = rs_item['Configuration']
+            rs_item['resourceShareArn'] = config['resourceShareArn']
+            #print (rs_item['resourceShareArn'])
+            rs_list.append(rs_item)
+        return rs_list
+
+
+
+            
