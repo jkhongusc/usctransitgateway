@@ -22,6 +22,8 @@ from __future__ import print_function
 
 import os
 import boto3
+import random
+import string
 
 from dynamodb import TgwDynamoDb
 from ec2 import TgwEc2
@@ -67,7 +69,7 @@ def lambda_handler(event, context):
     
     try:
 
-        print ("starting")
+        print ("Information:")
         myram = TgwRam(region)
         ramprincipals = myram.get_principals()
         print("[RAM] Transit Gateway, (%d) Principals" % (len(ramprincipals)) )
@@ -85,6 +87,9 @@ def lambda_handler(event, context):
         tgwlist = mydynamo.get_transit_gateway() 
         vpclist = mydynamo.get_vpc() 
         vpnlist = mydynamo.get_vpn() 
+        # lets assume only 1 rslist
+        rslist = mydynamo.get_resource_shares() 
+
         print("[DynamoDb] (%d) Transit Gateway, (%d) VPCs, (%d) VPNs" % (len(tgwlist),len(vpclist),len(vpnlist)) )
         for tgwitem in tgwlist:
             print("Transit Gateway (%s) CIDR (%s) AWS (%s) VPC (%s)" % (tgwitem['TransitGatewayId'],tgwitem['Cidr'],tgwitem['Account'],tgwitem['ResourceId']) )
@@ -102,11 +107,11 @@ def lambda_handler(event, context):
         # iterate through DynamoDB VPC list
         # check if VPC is in Transit Gateway Attachment list, if not create alert
         # for errors: account admin has to manually check or attach
-        print ("\nNotifications")
+        print ("\nAlerts/Notifications")
         print ("Check #1: DynamoDB and Transit Gateway Attachments")
         for vpcitem in vpclist:
             if not any (d['VpcId'] == vpcitem['ResourceId'] for d in vpcattachments):
-                print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                print("    [ERROR - MISSING VPC] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
                 slack_msg("[ERROR - MISSING VPC] VPC (%s) CIDR (%s) AWS (%s) is not found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
             else:
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in TGW Attachment list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
@@ -118,7 +123,7 @@ def lambda_handler(event, context):
         print ("Check #2: Transit Gateway Attachments and DynamoDb")
         for vpcattachment in vpcattachments:
             if not any (d['ResourceId'] == vpcattachment['VpcId'] for d in vpclist):
-                print("    [ERROR] VPC (%s) AWS (%s) is not found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
+                print("    [ERROR - UNAUTHORIZED] VPC (%s) AWS (%s) is not found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
                 slack_msg("[ERROR - UNAUTHORIZED] VPC (%s) AWS (%s) is not found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
             else:
                 print("    VPC (%s) AWS (%s) is found in DynamoDb list" % (vpcattachment['VpcId'],vpcattachment['VpcOwnerId']) )
@@ -134,19 +139,46 @@ def lambda_handler(event, context):
                 continue
             #if not any (d['Account'] == vpcitem['Account'] for d in vpclist):
             if not any (d['id'] == vpcitem['Account'] for d in ramprincipals):
-                print("    [ERROR] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
+                print("    [ERROR - LOST INVITATION] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
                 slack_msg("[ERROR - LOST INVITATION] VPC (%s) CIDR (%s) AWS (%s) is not found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
                 #print ("%s arn:aws:ec2:%s:%s:transit-gateway/%s %s," %( ramsharenames[0], region, tgwitem['Account'], tgwitem['TransitGatewayId'], vpcitem['Account'] ))
                 # need to check if there are pending invitations.  Max 20 pending invitations
-                response = myram.get_resource_share_associations( 'PRINCIPAL',vpcitem['Account'], 'ASSOCIATING' )
+
+		# need to find id of main resource share, chec 
+                tgwarn = 'arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId']
+                #response = myram.get_resource_share_associations( 'PRINCIPAL',list(),tgwarn,vpcitem['Account'], 'ASSOCIATING' )
+                #print (response)
+                response = myram.get_resource_share_associations( 'PRINCIPAL',[rslist[0]['resourceShareArn']],None,vpcitem['Account'], list())
+                #print (response)
+                #exit()
                 if (response):
                     # Found a pending invitation
                     print ("        pending RAM resource share/invitation to: " + vpcitem['Account'])
                     #print (response)
                 else:
-                    print ("        creating RAM resource share/invitation to: " + vpcitem['Account'])
-                    response = myram.create_resource_share( ramsharenames[0],  ['arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId'] ],[ vpcitem['Account']])
+                    print ("        creating RAM resource share/invitation to [SKIPPING DEV-IN_PROGRESS]: " + vpcitem['Account'])
+		    
+		    # Do not create new resource share for each principal - too hard to manage.  
+		    # Instead have one resource share to share TGW to multiple principals
+                    #response = myram.create_resource_share( ramsharenames[0],  ['arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId'] ],[ vpcitem['Account']])
+
+		    # instead do: 
+		    #    1) get_resource_share_associations() to get full current list
+		    #    2) associate_resource_share() - add full list from step #1 with added principal
+                    #response = myram.associate_resource_share( ramsharenames[0],  ['arn:aws:ec2:'+region+':'+tgwitem['Account']+':transit-gateway/'+tgwitem['TransitGatewayId'] ],[ vpcitem['Account']])
+                    if (len(rslist) < 1):
+                        continue
+                    rs_principals = myram.get_resource_share_associations( 'PRINCIPAL', [rslist[0]['resourceShareArn']], None)
+                    print (rs_principals)
+                    rs_resources = myram.get_resource_share_associations( 'RESOURCE', [rslist[0]['resourceShareArn']], None)
+                    print (rs_resources)
+                    token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+                    print(token)
+                    # add new account to rs_resources
+                    # need to strip rs_principals and rs_resources
+                    #response = myram.associate_resource_share( rslist[0]['resourceShareArn'], rs_resources, rs_principals , token)
                     #print (response)
+
 
             else:
                 print("    VPC (%s) CIDR (%s) AWS (%s) is found in RAM list" % (vpcitem['ResourceId'],vpcitem['Cidr'],vpcitem['Account']) )
