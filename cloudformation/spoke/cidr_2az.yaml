@@ -35,7 +35,7 @@ Parameters:
     Description: 'Tag: project name'
   DNS:
     Type: CommaDelimitedList
-    Default: "10.254.0.2,"
+    Default: "10.254.0.2"
     Description: "IP address shared0 Domain Name Servers"
   Domain:
     Type: String
@@ -225,7 +225,7 @@ Resources:
       SubnetIds:
         - !Ref SubnetAPrivate
         - !Ref SubnetBPrivate
-      VpnGatewayId: !Ref VPNGateway
+      TransitGatewayId: !Ref VPNGateway
       VpcId: !Ref VPC
 
 # These are the values output by the CloudFormation template. Be careful
