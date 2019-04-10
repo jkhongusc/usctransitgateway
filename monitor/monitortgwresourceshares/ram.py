@@ -64,12 +64,22 @@ class TgwRam:
             vpn_list.append(item)
         return vpn_list
 
-    def get_resource_share_associations(self,associationType,principal,associationStatus):
-        response = self.client.get_resource_share_associations(associationType=associationType,principal=principal,associationStatus=associationStatus)
+    def get_resource_share_associations(self,associationType,resourceShareArns=list(),resourceArn=None,principal=None,associationStatus=list()):
+        if len(resourceShareArns) == 0 and len(associationStatus) > 0:
+            #response = self.client.get_resource_share_associations(associationType=associationType,resourceArn=resourceArn,principal=principal,associationStatus=associationStatus)
+            response = self.client.get_resource_share_associations(associationType=associationType,principal=principal,associationStatus=associationStatus)
+        elif len(resourceShareArns) > 0 and principal == None:
+            response = self.client.get_resource_share_associations(associationType=associationType,resourceShareArns=resourceShareArns)
+        else:
+            response = self.client.get_resource_share_associations(associationType=associationType,resourceShareArns=resourceShareArns,principal=principal)
         return response['resourceShareAssociations']
 
     def create_resource_share(self,name,arns,principals):
         response = self.client.create_resource_share(name=name,resourceArns=arns,principals=principals,allowExternalPrincipals=True)
+        return response
+
+    def associate_resource_share(self,resourceShareArns,resourceArns,principals):
+        response = self.client.get_resource_share_associations(associationType=associationType,resourceShareArns=resourceShareArns)
         return response
 
 
