@@ -156,7 +156,7 @@ def lambda_handler(event, context):
                     print ("        pending RAM resource share/invitation to: " + vpcitem['Account'])
                     #print (response)
                 else:
-                    print ("        creating RAM resource share/invitation to [SKIPPING DEV-IN_PROGRESS]: " + vpcitem['Account'])
+                    print ("        creating RAM resource share/invitation to: " + vpcitem['Account'])
 		    
 		    # Do not create new resource share for each principal - too hard to manage.  
 		    # Instead have one resource share to share TGW to multiple principals
@@ -169,14 +169,26 @@ def lambda_handler(event, context):
                     if (len(rslist) < 1):
                         continue
                     rs_principals = myram.get_resource_share_associations( 'PRINCIPAL', [rslist[0]['resourceShareArn']], None)
-                    print (rs_principals)
+                    #print (rs_principals)
+                    # need to strip rs_principals and rs_resources
+                    principals_list = []
+                    for item in rs_principals:
+                        principals_list.append(item['associatedEntity'])
+                    # add new account to rs_principals
+                    principals_list.append(vpcitem['Account'])
+                    #print (principals_list)
+                    
                     rs_resources = myram.get_resource_share_associations( 'RESOURCE', [rslist[0]['resourceShareArn']], None)
-                    print (rs_resources)
+                    #print (rs_resources)
+                    # need to strip rs_principals and rs_resources
+                    resources_list = []
+                    for item in rs_resources:
+                        resources_list.append(item['associatedEntity'])
+                    #print (resources_list)
+
                     token = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                     print(token)
-                    # add new account to rs_resources
-                    # need to strip rs_principals and rs_resources
-                    #response = myram.associate_resource_share( rslist[0]['resourceShareArn'], rs_resources, rs_principals , token)
+                    response = myram.associate_resource_share( rslist[0]['resourceShareArn'], resources_list, principals_list , token)
                     #print (response)
 
 
