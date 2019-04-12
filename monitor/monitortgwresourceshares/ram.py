@@ -78,8 +78,8 @@ class TgwRam:
         response = self.client.create_resource_share(name=name,resourceArns=arns,principals=principals,allowExternalPrincipals=True)
         return response
 
-    def associate_resource_share(self,resourceShareArns,resourceArns,principals):
-        response = self.client.get_resource_share_associations(associationType=associationType,resourceShareArns=resourceShareArns)
+    def associate_resource_share(self,resourceShareArn,resourceArns,principals,clientToken):
+        response = self.client.associate_resource_share(resourceShareArn=resourceShareArn,resourceArns=resourceArns,principals=principals,clientToken=clientToken)
         return response
 
 
