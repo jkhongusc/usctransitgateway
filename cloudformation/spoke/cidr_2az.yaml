@@ -35,7 +35,7 @@ Parameters:
     Description: 'Tag: project name'
   DNS:
     Type: CommaDelimitedList
-    Default: "10.254.0.2"
+    Default: "10.254.0.50"
     Description: "IP address shared0 Domain Name Servers"
   Domain:
     Type: String
