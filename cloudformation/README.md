@@ -8,6 +8,7 @@ CloudFormation templates for the USC transit gateway project
   - [cidr24_3az.yaml](spoke/cidr24_3az.yaml) - CFT that creates /24 VPC with three /26 subnets in separate AZs
   - [cidr_1az.yaml](spoke/cidr_2az.yaml) - CFT that creates any size VPC with one subnets
   - [cidr_2az.yaml](spoke/cidr_2az.yaml) - CFT that creates any size VPC with two subnets in separate AZs
+- spoke
+  - [cidr_3az_private_public_noNat.yaml](inline_fortinet/cidr_3az_private_public_noNat.yml) - CFT that creates any size VPC with 3 private and 3 public subnets in separate AZs; no NAT gateways in public subnets
 
 
-test
